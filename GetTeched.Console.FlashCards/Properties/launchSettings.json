@@ -2,7 +2,7 @@
   "profiles": {
     "GetTeched.Console.FlashCards": {
       "commandName": "Project",
-      "workingDirectory": "E:\\C# Dev\\GetTeched\\CodeReviews.Console.Flashcards\\GetTeched.Console.FlashCards\\"
+      "workingDirectory": "F:\\C# Dev\\GetTeched\\CodeReviews.Console.Flashcards\\GetTeched.Console.FlashCards\\"
     }
   }
 }
