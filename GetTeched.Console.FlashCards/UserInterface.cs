@@ -35,7 +35,7 @@ internal class UserInterface
             .PageSize(10)
             .AddChoices(new[]
             {
-                "Show Items", "Add Items", "Update Items", "Remove Items", "Exit"
+                "Show Items", "Add Items", "Update Items", "Remove Items", "Seed Database", "Exit"
             }));
 
             switch (userInput)
@@ -51,6 +51,9 @@ internal class UserInterface
                     break;
                 case "Remove Items":
                     RemoveItems();
+                    break;
+                case "Seed Database":
+                    SeedDatabase();
                     break;
                 case "Exit":
                     endApplication = true;
@@ -298,5 +301,10 @@ internal class UserInterface
         else AnsiConsole.Write(new Markup($"[red]ID:{selectedId} was not found. Press any key to try again.[/]"));
         Console.ReadLine();
         return false;
+    }
+
+    internal void SeedDatabase()
+    {
+        DatabaseManager.SqlSeedData();
     }
 }

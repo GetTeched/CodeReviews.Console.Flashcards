@@ -16,16 +16,13 @@ internal class Program
         AnsiConsole.Status()
     .Start("Validating Flash Cards", ctx =>
     {
-        // Simulate some work
         AnsiConsole.MarkupLine("Initializing Database...");
         Thread.Sleep(2000);
 
-        // Update the status and spinner
         ctx.Status("Building Menu structure");
         ctx.Spinner(Spinner.Known.Star);
         ctx.SpinnerStyle(Style.Parse("green"));
 
-        // Simulate some work
         AnsiConsole.MarkupLine("Initializing Main Menu...");
         Thread.Sleep(2000);
     });
