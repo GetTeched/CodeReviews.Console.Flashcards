@@ -1,6 +1,6 @@
 ﻿using Spectre.Console;
 
-namespace GetTeched.FlashCards;
+namespace GetTeched.Flash_Cards;
 
 internal class Program
 {
@@ -44,7 +44,8 @@ internal class Program
         //            task3.Increment(1);
         //        }
         //    });
-        UserInterface userInterface = new();
+        UserInterface userInterface = new(databaseManager);
+        databaseManager.UserInterface = userInterface;
         userInterface.MainMenu();
     }
 }
