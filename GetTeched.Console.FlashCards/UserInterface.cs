@@ -1,4 +1,5 @@
-﻿using GetTeched.Flash_Cards.Models;
+﻿using Bogus;
+using GetTeched.Flash_Cards.Models;
 using Spectre.Console;
 using System;
 using System.Collections;
@@ -18,6 +19,8 @@ internal class UserInterface
         DatabaseManager = databaseManager;
         databaseManager.UserInterface = this;
     }
+
+    TableVisualEngine tablevisualEngine = new();
 
     internal void MainMenu()
     {
@@ -83,10 +86,10 @@ internal class UserInterface
         switch (userInput)
         {
             case "Show Stacks":
-                DatabaseManager.SqlShowStacks();
+                tablevisualEngine.DisplayStacks(DatabaseManager.GetStacks());
                 break;
             case "Show Flashcards":
-                DatabaseManager.SqlShowFlashCards();
+                tablevisualEngine.DisplayFlashCards(DatabaseManager.GetFlashCards());
                 break;
             case "Return to Main Menu":
                 break;
@@ -198,36 +201,58 @@ internal class UserInterface
 
     internal void AddFlashCards()
     {
-        bool entryValid = false;
         FlashCards flashCards = new();
-        flashCards.Front = AnsiConsole.Ask<string>("[blue]Please enter a question for this card[/]");
-        flashCards.Back = AnsiConsole.Ask<string>("[blue]Please enter a answer for this card.[/]");
+        var stacks = DatabaseManager.GetStacks();
 
-        while (!entryValid)
+        AnsiConsole.Clear();
+        AnsiConsole.Write(
+            new FigletText("Add Items TEST")
+            .Centered()
+            .Color(Color.Teal));
+
+        var userInput = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title("Please select an option with the arrow keys.")
+            .PageSize(10)
+            .AddChoices(DatabaseManager.StackName())
+            .AddChoices("Return To Main Menu"));
+        if (userInput == "Return To Main Menu") MainMenu();
+
+        flashCards.StackId = stacks.Single(s => s.Name == userInput).Id;
+        flashCards.Front = AnsiConsole.Ask<string>("[blue]Please enter a question[/]");
+        while (string.IsNullOrEmpty(flashCards.Front))
         {
-            DatabaseManager.SqlShowStacks();
-            flashCards.StackId = AnsiConsole.Ask<int>("[blue]Please enter the Id of the stack this card is linked to.[/]\n [red] Enter 0 to return to the Main Menu[/]");
-            if (flashCards.StackId == 0) MainMenu();
-            AnsiConsole.Clear();
-            entryValid = IdInRange(DatabaseManager.GetIds("FlashCards"), flashCards.StackId);
+            flashCards.Front = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
         }
-
+        flashCards.Back = AnsiConsole.Ask<string>("[blue]Please enter an answer[/]");
+        while (string.IsNullOrEmpty(flashCards.Back))
+        {
+            flashCards.Back = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+        }
         DatabaseManager.SqlAddFlashCard(flashCards);
+
+  
     }
 
     internal void UpdateStack()
     {
-        bool entryValid = false;
         CardStacks stack = new();
+        var stacks = DatabaseManager.GetStacks();
+        
+        AnsiConsole.Clear();
+        AnsiConsole.Write(
+            new FigletText("Update Items TEST")
+            .Centered()
+            .Color(Color.Teal));
 
-        while (!entryValid)
-        {
-            DatabaseManager.SqlShowStacks();
-            stack.Id = AnsiConsole.Ask<int>("[blue]Please enter the Id of the stack you want to edit.[/]\n [red] Enter 0 to return to the Main Menu[/]");
-            if (stack.Id == 0) MainMenu();
-            AnsiConsole.Clear();
-            entryValid = IdInRange(DatabaseManager.GetIds("Stacks"), stack.Id);
-        }
+        var userInput = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title("Please select an option with the arrow keys.")
+            .PageSize(10)
+            .AddChoices(DatabaseManager.StackName())
+            .AddChoices("Return To Main Menu"));
+        if(userInput == "Return To Main Menu") MainMenu();
+        stack.Id = stacks.Single(s => s.Name == userInput).Id;
         stack.Name = AnsiConsole.Ask<string>("[blue]Please enter a name for a stack[/]");
         while (string.IsNullOrEmpty(stack.Name))
         {
@@ -238,57 +263,85 @@ internal class UserInterface
 
     internal void UpdateFlashCards()
     {
-        bool entryValid = false;
         FlashCards flashCards = new();
+        var cards = DatabaseManager.GetFlashCards();
 
-        while(!entryValid)
+        AnsiConsole.Clear();
+        AnsiConsole.Write(
+            new FigletText("Update Items TEST")
+            .Centered()
+            .Color(Color.Teal));
+
+        var userInput = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title("Please select an option with the arrow keys.")
+            .PageSize(10)
+            .AddChoices(DatabaseManager.FlashCardName())
+            .AddChoices("Return To Main Menu"));
+        if (userInput == "Return To Main Menu") MainMenu();
+
+        flashCards.Id = cards.Single(s => s.Front == userInput).Id;
+        flashCards.Front = AnsiConsole.Ask<string>("[blue]Please enter a question[/]");
+        while (string.IsNullOrEmpty(flashCards.Front))
         {
-            DatabaseManager.SqlShowFlashCards();
-            flashCards.Id = AnsiConsole.Ask<int>("[blue]Please enter the Id of the Flash Card you want to edit.[/]\n [red] Enter 0 to return to the Main Menu[/]");
-            if (flashCards.Id == 0) MainMenu();
-            AnsiConsole.Clear();
-            entryValid = IdInRange(DatabaseManager.GetIds("FlashCards"), flashCards.Id);
+            flashCards.Front = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
         }
-
-        flashCards.Front = AnsiConsole.Ask<string>("[blue]Please enter a question for this card[/]");
-        flashCards.Back = AnsiConsole.Ask<string>("[blue]Please enter a answer for this card.[/]");
+        flashCards.Back = AnsiConsole.Ask<string>("[blue]Please enter an answer[/]");
+        while (string.IsNullOrEmpty(flashCards.Back))
+        {
+            flashCards.Back = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+        }
         DatabaseManager.SqlUpdateFlashCards(flashCards);
     }
 
     internal void RemoveStack()
     {
-        bool entryValid = false;
         CardStacks stack = new();
+        var stacks = DatabaseManager.GetStacks();
 
-        while (!entryValid)
+        AnsiConsole.Clear();
+        AnsiConsole.Write(
+            new FigletText("Remove Item Test")
+            .Centered()
+            .Color(Color.Teal));
+
+        var userInput = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title("Please select an option with the arrow keys.")
+            .PageSize(10)
+            .AddChoices(DatabaseManager.StackName())
+            .AddChoices("Return to Main Menu"));
+        if (userInput == "Return to Main Menu") MainMenu();
+        stack.Id = stacks.Single(s => s.Name == userInput).Id;
+        if(!AnsiConsole.Confirm($"Are you sure you want to delete stack {userInput}?"))
         {
-            DatabaseManager.SqlShowStacks();
-            stack.Id = AnsiConsole.Ask<int>("[blue]Please enter the Id of the stack you want to remove.[/]\n [red] Enter 0 to return to the Main Menu[/]");
-            if (stack.Id == 0) MainMenu();
-            AnsiConsole.Clear();
-            entryValid = IdInRange(DatabaseManager.GetIds("Stacks"), stack.Id);
+            RemoveStack();
         }
-        //TODO: Get stack name for confirmation
-        if (!AnsiConsole.Confirm($"Are you sure you want to delete the following Stack: "))
-            MainMenu();
         DatabaseManager.SqlRemoveStack(stack);
     }
     internal void RemoveFlashCards()
     {
-        bool entryValid = false;
         FlashCards flashCards = new();
+        var cards = DatabaseManager.GetFlashCards();
 
-        while (!entryValid)
+        AnsiConsole.Clear();
+        AnsiConsole.Write(
+            new FigletText("Remove Item Test")
+            .Centered()
+            .Color(Color.Teal));
+
+        var userInput = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title("Please select an option with the arrow keys.")
+            .PageSize(10)
+            .AddChoices(DatabaseManager.FlashCardName())
+            .AddChoices("Return to Main Menu"));
+        if (userInput == "Return to Main Menu") MainMenu();
+        flashCards.Id = cards.Single(s => s.Front == userInput).Id;
+        if(!AnsiConsole.Confirm($"Are your sure you want to delete flash card {userInput}"))
         {
-            DatabaseManager.SqlShowFlashCards();
-            flashCards.Id = AnsiConsole.Ask<int>("[blue]Please enter the Id of the flash card you want to remove.[/]\n [red] Enter 0 to return to the Main Menu[/]");
-            if (flashCards.Id == 0) MainMenu();
-            AnsiConsole.Clear();
-            entryValid = IdInRange(DatabaseManager.GetIds("FlashCards"), flashCards.Id);
-        }
-        //TODO: Get stack name for confirmation
-        if (!AnsiConsole.Confirm($"Are you sure you want to delete the following Stack: "))
-            MainMenu();
+            RemoveFlashCards();
+        }        
         DatabaseManager.SqlRemoveFlashCards(flashCards);
     }
 

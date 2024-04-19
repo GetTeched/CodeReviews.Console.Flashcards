@@ -93,7 +93,7 @@ internal class DatabaseManager
         }
     }
 
-    internal List<CardStacks> SqlShowStacks()
+    internal List<CardStacks> SqlShowStacks(bool rawData = false)
     {
         using (var connection = new SqlConnection(ConnectionString))
         {
@@ -103,7 +103,7 @@ internal class DatabaseManager
             if(tableData.Any())
             {
                 AnsiConsole.Clear();
-                TableVisualEngine.ShowTable(tableData);
+                TableVisualEngine.ShowTable(tableData, rawData);
             }
             else
             {
@@ -115,7 +115,7 @@ internal class DatabaseManager
         return new List<CardStacks>();
     }
 
-    internal List<FlashCards> SqlShowFlashCards()
+    internal List<FlashCards> SqlShowFlashCards(bool rawData = false)
     {
         using (var connection = new SqlConnection(ConnectionString))
         {
@@ -125,7 +125,8 @@ internal class DatabaseManager
             if (tableData.Any())
             {
                 AnsiConsole.Clear();
-                TableVisualEngine.ShowTable(tableData);
+                TableVisualEngine.ShowTable(tableData, rawData);
+                //TableVisualEngine.Display(tableData);
             }
             else
             {
@@ -168,6 +169,66 @@ internal class DatabaseManager
         }
     }
 
+    internal IEnumerable<CardStacks> GetStacks()
+    {
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+            string sqlQuery =
+                @$"SELECT * FROM Stacks";
+            var properties = connection.Query<CardStacks>(sqlQuery);
+            return properties;
+        }
+    }
+
+    internal IEnumerable<FlashCards> GetFlashCards()
+    {
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+            string sqlQuery =
+                @$"SELECT * FROM FlashCards";
+            var properties = connection.Query<FlashCards>(sqlQuery);
+            return properties;
+        }
+    }
+
+    internal string[] StackName()
+    {
+        List<string> stack = new();
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+            string sqlQuery =
+                @$"SELECT * FROM Stacks";
+            var properties = connection.Query<CardStacks>(sqlQuery);
+
+            foreach (var property in properties)
+            {
+                stack.Add(property.Name);
+            }
+            return stack.ToArray();
+        }
+    }
+
+    internal string[] FlashCardName()
+    {
+        List<string> flashCard = new();
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+            string sqlQuery =
+                @$"SELECT * FROM FlashCards";
+            var properties = connection.Query<FlashCards>(sqlQuery);
+
+            foreach (var property in properties)
+            {
+                flashCard.Add(property.Front);
+            }
+            return flashCard.ToArray();
+        }
+    }
+
     internal void SqlAddFlashCard(FlashCards flashCards)
     {
         using (var connection = new SqlConnection(ConnectionString))
@@ -185,8 +246,8 @@ internal class DatabaseManager
         {
             connection.Open();
             string sqlQuery =
-                @"UPDATE Stacks SET Name = @Name";
-            connection.Execute(sqlQuery, new {stacks.Name});
+                @"UPDATE Stacks SET Name = @Name WHERE Id = @Id";
+            connection.Execute(sqlQuery, new {stacks.Name, stacks.Id });
         }
     }
 
@@ -198,8 +259,9 @@ internal class DatabaseManager
             string sqlQuery =
                 @"UPDATE FlashCards SET
                 Front = @Front,
-                Back = @Back";
-            connection.Execute(sqlQuery, new {flashCards.Front, flashCards.Back});
+                Back = @Back
+                WHERE Id = @Id";
+            connection.Execute(sqlQuery, new {flashCards.Front, flashCards.Back, flashCards.Id});
         }
     }
 

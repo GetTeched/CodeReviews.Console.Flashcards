@@ -17,14 +17,14 @@ internal class Program
     .Start("Validating Flash Cards", ctx =>
     {
         AnsiConsole.MarkupLine("Initializing Database...");
-        Thread.Sleep(2000);
+        Thread.Sleep(250);
 
         ctx.Status("Building Menu structure");
         ctx.Spinner(Spinner.Known.Star);
         ctx.SpinnerStyle(Style.Parse("green"));
 
         AnsiConsole.MarkupLine("Initializing Main Menu...");
-        Thread.Sleep(2000);
+        Thread.Sleep(250);
     });
 
         //AnsiConsole.Progress()
