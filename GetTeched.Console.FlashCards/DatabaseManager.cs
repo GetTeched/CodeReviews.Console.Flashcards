@@ -93,50 +93,50 @@ internal class DatabaseManager
         }
     }
 
-    internal List<CardStacks> SqlShowStacks(bool rawData = false)
-    {
-        using (var connection = new SqlConnection(ConnectionString))
-        {
-            string sqlQuery = @"SELECT * FROM Stacks";
-            var tableData = connection.Query<CardStacks>(sqlQuery).ToList();
+    //internal List<CardStacks> SqlShowStacks(bool rawData = false)
+    //{
+    //    using (var connection = new SqlConnection(ConnectionString))
+    //    {
+    //        string sqlQuery = @"SELECT * FROM Stacks";
+    //        var tableData = connection.Query<CardStacks>(sqlQuery).ToList();
 
-            if(tableData.Any())
-            {
-                AnsiConsole.Clear();
-                TableVisualEngine.ShowTable(tableData, rawData);
-            }
-            else
-            {
-                AnsiConsole.Write(new Markup("[red]\n No Data Found, Press any key to return to the Main Menu[/]"));
-                Console.ReadLine();
-                UserInterface.MainMenu();
-            }
-        }
-        return new List<CardStacks>();
-    }
+    //        if(tableData.Any())
+    //        {
+    //            AnsiConsole.Clear();
+    //            TableVisualEngine.ShowTable(tableData, rawData);
+    //        }
+    //        else
+    //        {
+    //            AnsiConsole.Write(new Markup("[red]\n No Data Found, Press any key to return to the Main Menu[/]"));
+    //            Console.ReadLine();
+    //            UserInterface.MainMenu();
+    //        }
+    //    }
+    //    return new List<CardStacks>();
+    //}
 
-    internal List<FlashCards> SqlShowFlashCards(bool rawData = false)
-    {
-        using (var connection = new SqlConnection(ConnectionString))
-        {
-            string sqlQuery = @"SELECT * FROM FlashCards";
-            var tableData = connection.Query<FlashCards>(sqlQuery).ToList();
+    //internal List<FlashCards> SqlShowFlashCards(bool rawData = false)
+    //{
+    //    using (var connection = new SqlConnection(ConnectionString))
+    //    {
+    //        string sqlQuery = @"SELECT * FROM FlashCards";
+    //        var tableData = connection.Query<FlashCards>(sqlQuery).ToList();
 
-            if (tableData.Any())
-            {
-                AnsiConsole.Clear();
-                TableVisualEngine.ShowTable(tableData, rawData);
-                //TableVisualEngine.Display(tableData);
-            }
-            else
-            {
-                AnsiConsole.Write(new Markup("[red]\n No Data Found, Press any key to return to the Main Menu[/]"));
-                Console.ReadLine();
-                UserInterface.MainMenu();
-            }
-        }
-        return new List<FlashCards>();
-    }
+    //        if (tableData.Any())
+    //        {
+    //            AnsiConsole.Clear();
+    //            TableVisualEngine.ShowTable(tableData, rawData);
+    //            //TableVisualEngine.Display(tableData);
+    //        }
+    //        else
+    //        {
+    //            AnsiConsole.Write(new Markup("[red]\n No Data Found, Press any key to return to the Main Menu[/]"));
+    //            Console.ReadLine();
+    //            UserInterface.MainMenu();
+    //        }
+    //    }
+    //    return new List<FlashCards>();
+    //}
 
     internal void SqlAddStack(CardStacks stacks)
     {
@@ -150,85 +150,6 @@ internal class DatabaseManager
             connection.Execute(sqlQuery, new { stacks.Name });
         }
     }
-
-    internal int[] GetIds(string tableName)
-    {
-        List<int> ids = new();
-        using(var connection = new SqlConnection(ConnectionString))
-        {
-            connection.Open();
-            string sqlQuery = 
-                @$"SELECT * FROM {tableName}";
-            var properties = connection.Query<CardStacks>(sqlQuery);
-
-            foreach (var property in properties)
-            {
-                ids.Add(property.Id);
-            }
-            return ids.ToArray();
-        }
-    }
-
-    internal IEnumerable<CardStacks> GetStacks()
-    {
-        using (var connection = new SqlConnection(ConnectionString))
-        {
-            connection.Open();
-            string sqlQuery =
-                @$"SELECT * FROM Stacks";
-            var properties = connection.Query<CardStacks>(sqlQuery);
-            return properties;
-        }
-    }
-
-    internal IEnumerable<FlashCards> GetFlashCards()
-    {
-        using (var connection = new SqlConnection(ConnectionString))
-        {
-            connection.Open();
-            string sqlQuery =
-                @$"SELECT * FROM FlashCards";
-            var properties = connection.Query<FlashCards>(sqlQuery);
-            return properties;
-        }
-    }
-
-    internal string[] StackName()
-    {
-        List<string> stack = new();
-        using (var connection = new SqlConnection(ConnectionString))
-        {
-            connection.Open();
-            string sqlQuery =
-                @$"SELECT * FROM Stacks";
-            var properties = connection.Query<CardStacks>(sqlQuery);
-
-            foreach (var property in properties)
-            {
-                stack.Add(property.Name);
-            }
-            return stack.ToArray();
-        }
-    }
-
-    internal string[] FlashCardName()
-    {
-        List<string> flashCard = new();
-        using (var connection = new SqlConnection(ConnectionString))
-        {
-            connection.Open();
-            string sqlQuery =
-                @$"SELECT * FROM FlashCards";
-            var properties = connection.Query<FlashCards>(sqlQuery);
-
-            foreach (var property in properties)
-            {
-                flashCard.Add(property.Front);
-            }
-            return flashCard.ToArray();
-        }
-    }
-
     internal void SqlAddFlashCard(FlashCards flashCards)
     {
         using (var connection = new SqlConnection(ConnectionString))
@@ -237,6 +158,60 @@ internal class DatabaseManager
             string sqlQuery =
                 @"INSERT INTO FlashCards (Front,Back,StackId) VALUES (@Front,@Back,@StackID)";
             connection.Execute(sqlQuery, new { flashCards.Front, flashCards.Back, flashCards.StackId });
+        }
+    }
+
+    //internal int[] GetIds(string tableName)
+    //{
+    //    List<int> ids = new();
+    //    using(var connection = new SqlConnection(ConnectionString))
+    //    {
+    //        connection.Open();
+    //        string sqlQuery = 
+    //            @$"SELECT * FROM {tableName}";
+    //        var properties = connection.Query<CardStacks>(sqlQuery);
+
+    //        foreach (var property in properties)
+    //        {
+    //            ids.Add(property.Id);
+    //        }
+    //        return ids.ToArray();
+    //    }
+    //}
+
+    internal IEnumerable<CardStacks> GetAllStacks()
+    {
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+            string sqlQuery =
+                @$"SELECT * FROM Stacks";
+            var properties = connection.Query<CardStacks>(sqlQuery);
+            return properties;
+        }
+    }
+
+    internal IEnumerable<FlashCards> GetAllFlashCards()
+    {
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+            string sqlQuery =
+                @$"SELECT * FROM FlashCards";
+            var properties = connection.Query<FlashCards>(sqlQuery);
+            return properties;
+        }
+    }
+
+    internal IEnumerable<FlashCards> GetFlashCards(CardStacks stack)
+    {
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+            string sqlQuery =
+                @$"SELECT * FROM FlashCards WHERE StackId = {stack.Id}";
+            var properties = connection.Query<FlashCards>(sqlQuery);
+            return properties;
         }
     }
 
@@ -287,6 +262,59 @@ internal class DatabaseManager
             string sqlQuery =
                 @"DELETE FROM FlashCards WHERE Id = @Id";
             connection.Execute(sqlQuery, new { flashCards.Id });
+        }
+    }
+
+    internal string[] StackName()
+    {
+        List<string> stack = new();
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+            string sqlQuery =
+                @$"SELECT * FROM Stacks";
+            var properties = connection.Query<CardStacks>(sqlQuery);
+
+            foreach (var property in properties)
+            {
+                stack.Add(property.Name);
+            }
+            return stack.ToArray();
+        }
+    }
+
+    internal string[] AllFlashCardName()
+    {
+        List<string> flashCard = new();
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+            string sqlQuery =
+                @$"SELECT * FROM FlashCards";
+            var properties = connection.Query<FlashCards>(sqlQuery);
+
+            foreach (var property in properties)
+            {
+                flashCard.Add(property.Front);
+            }
+            return flashCard.ToArray();
+        }
+    }
+    internal string[] FlashCardName(CardStacks stack)
+    {
+        List<string> flashCard = new();
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+            string sqlQuery =
+                @$"SELECT * FROM FlashCards WHERE StackID = {stack.Id}";
+            var properties = connection.Query<FlashCards>(sqlQuery);
+
+            foreach (var property in properties)
+            {
+                flashCard.Add(property.Front);
+            }
+            return flashCard.ToArray();
         }
     }
 }

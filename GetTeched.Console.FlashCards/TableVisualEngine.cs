@@ -83,7 +83,7 @@ internal class TableVisualEngine
 
     internal void DisplayFlashCards(IEnumerable<FlashCards> flashCards)
     {
-        var stack = databaseManager.GetStacks();
+        var stack = databaseManager.GetAllStacks();
         var table = new Table()
             .Border(TableBorder.Double)
             .Title("[teal]Showing Table[/]")

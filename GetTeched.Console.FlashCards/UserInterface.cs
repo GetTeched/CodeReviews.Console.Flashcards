@@ -38,22 +38,16 @@ internal class UserInterface
             .PageSize(10)
             .AddChoices(new[]
             {
-                "Show Items", "Add Items", "Update Items", "Remove Items", "Seed Database", "Exit"
+                "Select Stack", "View Items", "Seed Database", "Exit"
             }));
 
             switch (userInput)
             {
-                case "Show Items":
-                    ShowItems();
+                case "Select Stack":
+                    SelectStack();
                     break;
-                case "Add Items":
-                    AddItems();
-                    break;
-                case "Update Items":
-                    UpdateItems();
-                    break;
-                case "Remove Items":
-                    RemoveItems();
+                case "View Items":
+                    ViewItems();
                     break;
                 case "Seed Database":
                     SeedDatabase();
@@ -66,11 +60,14 @@ internal class UserInterface
         } while (!endApplication);
     }
 
-    internal void ShowItems()
+    internal void SelectStack()
     {
+        CardStacks stack = new();
+        var stacks = DatabaseManager.GetAllStacks();
+
         AnsiConsole.Clear();
         AnsiConsole.Write(
-            new FigletText("Show Items")
+            new FigletText("Select Stack")
             .Centered()
             .Color(Color.Teal));
 
@@ -78,113 +75,198 @@ internal class UserInterface
             new SelectionPrompt<string>()
             .Title("Please select an option with the arrow keys.")
             .PageSize(10)
-            .AddChoices(new[]
-            {
-                "Show Stacks", "Show Flashcards", "Return to Main Menu"
-            }));
-
+            .AddChoices(DatabaseManager.StackName())
+            .AddChoices("[green]Add Stack[/]", "[red]Return To Main Menu[/]"));
         switch (userInput)
         {
-            case "Show Stacks":
-                tablevisualEngine.DisplayStacks(DatabaseManager.GetStacks());
-                break;
-            case "Show Flashcards":
-                tablevisualEngine.DisplayFlashCards(DatabaseManager.GetFlashCards());
-                break;
-            case "Return to Main Menu":
-                break;
-        }
-    }
-
-    internal void AddItems()
-    {
-        AnsiConsole.Clear();
-        AnsiConsole.Write(
-            new FigletText("Add Items")
-            .Centered()
-            .Color(Color.Teal));
-
-        var userInput = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-            .Title("Please select an option with the arrow keys.")
-            .PageSize(10)
-            .AddChoices(new[]
-            {
-                "Add Stacks", "Add Flashcards", "Return to Main Menu"
-            }));
-
-        switch (userInput)
-        {
-            case "Add Stacks":
+            case "[green]Add Stack[/]":
                 AddStack();
                 break;
-            case "Add Flashcards":
-                AddFlashCards();
+            case "[red]Return To Main Menu[/]":
+                MainMenu();
                 break;
-            case "Return to Main Menu":
+            default:
+                stack.Id = stacks.Single(s => s.Name == userInput).Id;
+                stack.Name = userInput;
+                StackManagement(stack);
                 break;
         }
+        
     }
 
-    internal void UpdateItems()
+    internal void StackManagement(CardStacks stack)
     {
         AnsiConsole.Clear();
         AnsiConsole.Write(
-            new FigletText("Update Items")
+            new FigletText($"{stack.Name} Stack Management")
             .Centered()
             .Color(Color.Teal));
 
         var userInput = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
             .Title("Please select an option with the arrow keys.")
-            .PageSize(10)
+            .PageSize(12)
             .AddChoices(new[]
             {
-                "Update Stacks", "Update Flashcards", "Return to Main Menu"
-            }));
+                "View Flashcards","Study Flashcards"
+            })
+            .AddChoiceGroup("Manage Cards", new[]
+            {
+                "Add Flahshcards", "Edit Flashcards","Remove Flashcards"
+            })
+            .AddChoiceGroup("Manage Stack", new[]
+            {
+                "Edit Stack Name","Choose Another Stack", "Delete This Stack"
+            })
+            .AddChoices("Return To Main Menu"));
 
         switch (userInput)
         {
-            case "Update Stacks":
-                UpdateStack();
+            case "View Flashcards":
+                tablevisualEngine.DisplayFlashCards(DatabaseManager.GetFlashCards(stack));
                 break;
-            case "Update Flashcards":
-                UpdateFlashCards();
+            case "Add Flahshcards":
+                AddFlashCards(stack);
                 break;
-            case "Return to Main Menu":
-                break;
-        }
-    }
-
-    internal void RemoveItems()
-    {
-        AnsiConsole.Clear();
-        AnsiConsole.Write(
-            new FigletText("Remove Items")
-            .Centered()
-            .Color(Color.Teal));
-
-        var userInput = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-            .Title("Please select an option with the arrow keys.")
-            .PageSize(10)
-            .AddChoices(new[]
-            {
-            "Remove Stacks", "Remove Flashcards", "Return to Main Menu"
-            }));
-
-        switch (userInput)
-        {
-            case "Remove Stacks":
-                RemoveStack();
+            case "Edit Flashcards":
+                UpdateFlashCards(stack);
                 break;
             case "Remove Flashcards":
-                RemoveFlashCards();
+                RemoveFlashCards(stack);
+                break;
+            case "Edit Stack Name":
+                UpdateStack(stack);
+                break;
+            case "Choose Another Stack":
+                SelectStack();
+                break;
+            case "Delete This Stack":
+                RemoveStack(stack);
+                break;
+            case "Return To Main Menu":
+                break;
+        }
+    }
+
+    internal void ViewItems()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.Write(
+            new FigletText("View Items")
+            .Centered()
+            .Color(Color.Teal));
+
+        var userInput = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title("Please select an option with the arrow keys.")
+            .PageSize(10)
+            .AddChoices(new[]
+            {
+                "View Stacks", "View Flashcards", "Return to Main Menu"
+            }));
+
+        switch (userInput)
+        {
+            case "View Stacks":
+                tablevisualEngine.DisplayStacks(DatabaseManager.GetAllStacks());
+                break;
+            case "View Flashcards":
+                tablevisualEngine.DisplayFlashCards(DatabaseManager.GetAllFlashCards());
                 break;
             case "Return to Main Menu":
                 break;
         }
     }
+
+    //internal void AddItems()
+    //{
+    //    AnsiConsole.Clear();
+    //    AnsiConsole.Write(
+    //        new FigletText("Add Items")
+    //        .Centered()
+    //        .Color(Color.Teal));
+
+    //    var userInput = AnsiConsole.Prompt(
+    //        new SelectionPrompt<string>()
+    //        .Title("Please select an option with the arrow keys.")
+    //        .PageSize(10)
+    //        .AddChoices(new[]
+    //        {
+    //            "Add Stacks", "Add Flashcards", "Return to Main Menu"
+    //        }));
+
+    //    switch (userInput)
+    //    {
+    //        case "Add Stacks":
+    //            AddStack();
+    //            break;
+    //        case "Add Flashcards":
+    //            //AddFlashCards();
+    //            break;
+    //        case "Return to Main Menu":
+    //            break;
+    //    }
+    //}
+
+    //internal void UpdateItems()
+    //{
+    //    AnsiConsole.Clear();
+    //    AnsiConsole.Write(
+    //        new FigletText("Update Items")
+    //        .Centered()
+    //        .Color(Color.Teal));
+
+    //    var userInput = AnsiConsole.Prompt(
+    //        new SelectionPrompt<string>()
+    //        .Title("Please select an option with the arrow keys.")
+    //        .PageSize(10)
+    //        .AddChoices(new[]
+    //        {
+    //            "Update Stacks", "Update Flashcards", "Return to Main Menu"
+    //        }));
+
+    //    switch (userInput)
+    //    {
+    //        case "Update Stacks":
+    //            UpdateStack();
+    //            break;
+    //        case "Update Flashcards":
+    //            //UpdateFlashCards();
+    //            break;
+    //        case "Return to Main Menu":
+    //            break;
+    //    }
+    //}
+
+    //internal void RemoveItems()
+    //{
+    //    AnsiConsole.Clear();
+    //    AnsiConsole.Write(
+    //        new FigletText("Remove Items")
+    //        .Centered()
+    //        .Color(Color.Teal));
+
+    //    var userInput = AnsiConsole.Prompt(
+    //        new SelectionPrompt<string>()
+    //        .Title("Please select an option with the arrow keys.")
+    //        .PageSize(10)
+    //        .AddChoices(new[]
+    //        {
+    //        "Remove Stacks", "Remove Flashcards", "Return to Main Menu"
+    //        }));
+
+    //    switch (userInput)
+    //    {
+    //        case "Remove Stacks":
+    //            //RemoveStack();
+    //            break;
+    //        case "Remove Flashcards":
+    //            //RemoveFlashCards();
+    //            break;
+    //        case "Return to Main Menu":
+    //            break;
+    //    }
+    //}
 
     internal void AddStack()
     {
@@ -199,45 +281,82 @@ internal class UserInterface
         DatabaseManager.SqlAddStack(stack);
     }
 
-    internal void AddFlashCards()
+    internal void AddFlashCards(CardStacks stack)
     {
         FlashCards flashCards = new();
-        var stacks = DatabaseManager.GetStacks();
+        var stacks = DatabaseManager.GetAllStacks();
 
         AnsiConsole.Clear();
         AnsiConsole.Write(
-            new FigletText("Add Items TEST")
+            new FigletText($"Add Flashcard To {stack.Name}")
             .Centered()
             .Color(Color.Teal));
 
         var userInput = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-            .Title("Please select an option with the arrow keys.")
-            .PageSize(10)
-            .AddChoices(DatabaseManager.StackName())
-            .AddChoices("Return To Main Menu"));
-        if (userInput == "Return To Main Menu") MainMenu();
+                new SelectionPrompt<string>()
+                .Title("Please select an option with the arrow keys.")
+                .PageSize(10)
+                .AddChoices("Add Flashcard")
+                .AddChoices("Return To Stack Management"));
 
-        flashCards.StackId = stacks.Single(s => s.Name == userInput).Id;
-        flashCards.Front = AnsiConsole.Ask<string>("[blue]Please enter a question[/]");
-        while (string.IsNullOrEmpty(flashCards.Front))
+        if (userInput == "Return To Stack Management")
         {
-            flashCards.Front = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+            StackManagement(stack);
         }
-        flashCards.Back = AnsiConsole.Ask<string>("[blue]Please enter an answer[/]");
-        while (string.IsNullOrEmpty(flashCards.Back))
+        else
         {
-            flashCards.Back = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+            flashCards.StackId = stack.Id;
+            flashCards.Front = AnsiConsole.Ask<string>("[blue]Please enter a question[/]");
+            while (string.IsNullOrEmpty(flashCards.Front))
+            {
+                flashCards.Front = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+            }
+            flashCards.Back = AnsiConsole.Ask<string>("[blue]Please enter an answer[/]");
+            while (string.IsNullOrEmpty(flashCards.Back))
+            {
+                flashCards.Back = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+            }
+            DatabaseManager.SqlAddFlashCard(flashCards);
         }
-        DatabaseManager.SqlAddFlashCard(flashCards);
-
-  
     }
 
-    internal void UpdateStack()
+    //internal void AddFlashCards()
+    //{
+    //    FlashCards flashCards = new();
+    //    var stacks = DatabaseManager.GetAllStacks();
+
+    //    AnsiConsole.Clear();
+    //    AnsiConsole.Write(
+    //        new FigletText("Add Items TEST")
+    //        .Centered()
+    //        .Color(Color.Teal));
+
+    //    var userInput = AnsiConsole.Prompt(
+    //        new SelectionPrompt<string>()
+    //        .Title("Please select an option with the arrow keys.")
+    //        .PageSize(10)
+    //        .AddChoices(DatabaseManager.StackName())
+    //        .AddChoices("Return To Main Menu"));
+    //    if (userInput == "Return To Main Menu") MainMenu();
+
+    //    flashCards.StackId = stacks.Single(s => s.Name == userInput).Id;
+    //    flashCards.Front = AnsiConsole.Ask<string>("[blue]Please enter a question[/]");
+    //    while (string.IsNullOrEmpty(flashCards.Front))
+    //    {
+    //        flashCards.Front = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+    //    }
+    //    flashCards.Back = AnsiConsole.Ask<string>("[blue]Please enter an answer[/]");
+    //    while (string.IsNullOrEmpty(flashCards.Back))
+    //    {
+    //        flashCards.Back = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+    //    }
+    //    DatabaseManager.SqlAddFlashCard(flashCards);
+
+  
+    //}
+
+    internal void UpdateStack(CardStacks stack)
     {
-        CardStacks stack = new();
-        var stacks = DatabaseManager.GetStacks();
         
         AnsiConsole.Clear();
         AnsiConsole.Write(
@@ -245,14 +364,6 @@ internal class UserInterface
             .Centered()
             .Color(Color.Teal));
 
-        var userInput = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-            .Title("Please select an option with the arrow keys.")
-            .PageSize(10)
-            .AddChoices(DatabaseManager.StackName())
-            .AddChoices("Return To Main Menu"));
-        if(userInput == "Return To Main Menu") MainMenu();
-        stack.Id = stacks.Single(s => s.Name == userInput).Id;
         stack.Name = AnsiConsole.Ask<string>("[blue]Please enter a name for a stack[/]");
         while (string.IsNullOrEmpty(stack.Name))
         {
@@ -261,10 +372,10 @@ internal class UserInterface
         DatabaseManager.SqlUpdateStack(stack);
     }
 
-    internal void UpdateFlashCards()
+    internal void UpdateFlashCards(CardStacks stack)
     {
         FlashCards flashCards = new();
-        var cards = DatabaseManager.GetFlashCards();
+        var cards = DatabaseManager.GetAllFlashCards();
 
         AnsiConsole.Clear();
         AnsiConsole.Write(
@@ -276,28 +387,64 @@ internal class UserInterface
             new SelectionPrompt<string>()
             .Title("Please select an option with the arrow keys.")
             .PageSize(10)
-            .AddChoices(DatabaseManager.FlashCardName())
-            .AddChoices("Return To Main Menu"));
-        if (userInput == "Return To Main Menu") MainMenu();
-
-        flashCards.Id = cards.Single(s => s.Front == userInput).Id;
-        flashCards.Front = AnsiConsole.Ask<string>("[blue]Please enter a question[/]");
-        while (string.IsNullOrEmpty(flashCards.Front))
+            .AddChoices(DatabaseManager.FlashCardName(stack))
+            .AddChoices("Return To Stack Management"));
+        if (userInput == "Return To Stack Management")
         {
-            flashCards.Front = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
-        }
-        flashCards.Back = AnsiConsole.Ask<string>("[blue]Please enter an answer[/]");
-        while (string.IsNullOrEmpty(flashCards.Back))
+            StackManagement(stack);
+        } 
+        else
         {
-            flashCards.Back = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+            flashCards.Id = cards.Single(s => s.Front == userInput).Id;
+            flashCards.Front = AnsiConsole.Ask<string>("[blue]Please enter a question[/]");
+            while (string.IsNullOrEmpty(flashCards.Front))
+            {
+                flashCards.Front = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+            }
+            flashCards.Back = AnsiConsole.Ask<string>("[blue]Please enter an answer[/]");
+            while (string.IsNullOrEmpty(flashCards.Back))
+            {
+                flashCards.Back = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+            }
+            DatabaseManager.SqlUpdateFlashCards(flashCards);
         }
-        DatabaseManager.SqlUpdateFlashCards(flashCards);
     }
 
-    internal void RemoveStack()
+    //internal void UpdateFlashCards()
+    //{
+    //    FlashCards flashCards = new();
+    //    var cards = DatabaseManager.GetAllFlashCards();
+
+    //    AnsiConsole.Clear();
+    //    AnsiConsole.Write(
+    //        new FigletText("Update Items TEST")
+    //        .Centered()
+    //        .Color(Color.Teal));
+
+    //    var userInput = AnsiConsole.Prompt(
+    //        new SelectionPrompt<string>()
+    //        .Title("Please select an option with the arrow keys.")
+    //        .PageSize(10)
+    //        .AddChoices(DatabaseManager.FlashCardName())
+    //        .AddChoices("Return To Main Menu"));
+    //    if (userInput == "Return To Main Menu") MainMenu();
+
+    //    flashCards.Id = cards.Single(s => s.Front == userInput).Id;
+    //    flashCards.Front = AnsiConsole.Ask<string>("[blue]Please enter a question[/]");
+    //    while (string.IsNullOrEmpty(flashCards.Front))
+    //    {
+    //        flashCards.Front = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+    //    }
+    //    flashCards.Back = AnsiConsole.Ask<string>("[blue]Please enter an answer[/]");
+    //    while (string.IsNullOrEmpty(flashCards.Back))
+    //    {
+    //        flashCards.Back = AnsiConsole.Ask<string>("[red]Name can not be empty please try again[/]");
+    //    }
+    //    DatabaseManager.SqlUpdateFlashCards(flashCards);
+    //}
+
+    internal void RemoveStack(CardStacks stack)
     {
-        CardStacks stack = new();
-        var stacks = DatabaseManager.GetStacks();
 
         AnsiConsole.Clear();
         AnsiConsole.Write(
@@ -305,24 +452,43 @@ internal class UserInterface
             .Centered()
             .Color(Color.Teal));
 
-        var userInput = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-            .Title("Please select an option with the arrow keys.")
-            .PageSize(10)
-            .AddChoices(DatabaseManager.StackName())
-            .AddChoices("Return to Main Menu"));
-        if (userInput == "Return to Main Menu") MainMenu();
-        stack.Id = stacks.Single(s => s.Name == userInput).Id;
-        if(!AnsiConsole.Confirm($"Are you sure you want to delete stack {userInput}?"))
+        if(!AnsiConsole.Confirm($"Are you sure you want to delete stack {stack.Name}?"))
         {
-            RemoveStack();
+            StackManagement(stack);
         }
         DatabaseManager.SqlRemoveStack(stack);
     }
-    internal void RemoveFlashCards()
+
+    //internal void RemoveStack()
+    //{
+    //    CardStacks stack = new();
+    //    var stacks = DatabaseManager.GetAllStacks();
+
+    //    AnsiConsole.Clear();
+    //    AnsiConsole.Write(
+    //        new FigletText("Remove Item Test")
+    //        .Centered()
+    //        .Color(Color.Teal));
+
+    //    var userInput = AnsiConsole.Prompt(
+    //        new SelectionPrompt<string>()
+    //        .Title("Please select an option with the arrow keys.")
+    //        .PageSize(10)
+    //        .AddChoices(DatabaseManager.StackName())
+    //        .AddChoices("Return to Main Menu"));
+    //    if (userInput == "Return to Main Menu") MainMenu();
+    //    stack.Id = stacks.Single(s => s.Name == userInput).Id;
+    //    if (!AnsiConsole.Confirm($"Are you sure you want to delete stack {userInput}?"))
+    //    {
+    //        RemoveStack();
+    //    }
+    //    DatabaseManager.SqlRemoveStack(stack);
+    //}
+
+    internal void RemoveFlashCards(CardStacks stack)
     {
         FlashCards flashCards = new();
-        var cards = DatabaseManager.GetFlashCards();
+        var cards = DatabaseManager.GetAllFlashCards();
 
         AnsiConsole.Clear();
         AnsiConsole.Write(
@@ -334,16 +500,42 @@ internal class UserInterface
             new SelectionPrompt<string>()
             .Title("Please select an option with the arrow keys.")
             .PageSize(10)
-            .AddChoices(DatabaseManager.FlashCardName())
+            .AddChoices(DatabaseManager.FlashCardName(stack))
             .AddChoices("Return to Main Menu"));
         if (userInput == "Return to Main Menu") MainMenu();
         flashCards.Id = cards.Single(s => s.Front == userInput).Id;
         if(!AnsiConsole.Confirm($"Are your sure you want to delete flash card {userInput}"))
         {
-            RemoveFlashCards();
+            RemoveFlashCards(stack);
         }        
         DatabaseManager.SqlRemoveFlashCards(flashCards);
     }
+
+    //internal void RemoveFlashCards()
+    //{
+    //    FlashCards flashCards = new();
+    //    var cards = DatabaseManager.GetAllFlashCards();
+
+    //    AnsiConsole.Clear();
+    //    AnsiConsole.Write(
+    //        new FigletText("Remove Item Test")
+    //        .Centered()
+    //        .Color(Color.Teal));
+
+    //    var userInput = AnsiConsole.Prompt(
+    //        new SelectionPrompt<string>()
+    //        .Title("Please select an option with the arrow keys.")
+    //        .PageSize(10)
+    //        .AddChoices(DatabaseManager.AllFlashCardName())
+    //        .AddChoices("Return to Main Menu"));
+    //    if (userInput == "Return to Main Menu") MainMenu();
+    //    flashCards.Id = cards.Single(s => s.Front == userInput).Id;
+    //    if (!AnsiConsole.Confirm($"Are your sure you want to delete flash card {userInput}"))
+    //    {
+    //        RemoveFlashCards();
+    //    }
+    //    DatabaseManager.SqlRemoveFlashCards(flashCards);
+    //}
 
     internal bool IdInRange(int[] idRange, int selectedId)
     {
